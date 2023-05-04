@@ -1,51 +1,9 @@
 import os
 import openai
-import panel as pn  # GUI
-
-pn.extension()
-inp = pn.widgets.TextInput(value="Hi", placeholder='Enter text here…', width=600)
-button_conversation = pn.widgets.Button(name="Chat!", width=10)
 
 openai.api_key = "sk-"
 
-
-def get_completion(prompt, model="gpt-3.5-turbo"):
-    messages = [{"role": "user", "content": prompt}]
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=messages,
-        temperature=0,  # this is the degree of randomness of the model's output
-    )
-    return response.choices[0].message["content"]
-
-
-def get_completion_from_messages(messages, model="gpt-3.5-turbo", temperature=0):
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=messages,
-        temperature=temperature,  # this is the degree of randomness of the model's output
-    )
-    #     print(str(response.choices[0].message))
-    return response.choices[0].message["content"]
-
-
-def collect_messages(_):
-    prompt = inp.value_input
-    inp.value = ''
-    context.append({'role': 'user', 'content': f"{prompt}"})
-    response = get_completion_from_messages(context)
-    context.append({'role': 'assistant', 'content': f"{response}"})
-    panels.append(
-        pn.Row('User:', pn.pane.Markdown(prompt, width=600)))
-    panels.append(
-        pn.Row('Assistant:', pn.pane.Markdown(response, width=600, style={'background-color': '#F6F6F6'})))
-
-    return pn.Column(*panels)
-
-
-panels = []  # collect display
-
-context = [{'role': 'system', 'content': """
+systemPrompt =  """
 You are OrderBot, an automated service to collect orders for a pizza restaurant. \
 You first greet the customer, then collects the order, \
 and then asks if it's a pickup or delivery. \
@@ -73,15 +31,19 @@ Drinks: \
 coke 1.00, 2.00, 3.00 \
 sprite 3.00, 4.00, 5.00 \
 bottled water 5.00 \
-"""}]  # accumulate messages
+"""
 
-interactive_conversation = pn.bind(collect_messages, button_conversation)
+conversation=[{"role": "system", "content": systemPrompt }]
 
-dashboard = pn.Column(
-    pn.panel(interactive_conversation, loading_indicator=True, height=600),
-    pn.Row(inp, button_conversation),
-)
+while(True):
+    user_input = input()
+    conversation.append({"role": "user", "content": user_input})
 
-pn.template.FastListTemplate(
-    site="opencui", title="Food ordering", main=[dashboard],
-).servable()
+    response = openai.ChatCompletion.create(
+        engine="gpt-3.5-turbo", # The deployment name you chose when you deployed the ChatGPT or GPT-4 model.
+        messages = conversation,
+        temperature=0  # Try to as deterministic as possible.
+    )
+
+    conversation.append({"role": "assistant", "content": response['choices'][0]['message']['content']})
+    print("\n" + response['choices'][0]['message']['content'] + "\n")
