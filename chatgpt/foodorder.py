@@ -1,7 +1,7 @@
 import os
 import openai
 
-openai.api_key = "sk-"
+openai.api_key = "sk-***"  # your openai api key.
 
 systemPrompt =  """
 You are OrderBot, an automated service to collect orders for a pizza restaurant. \
@@ -33,17 +33,22 @@ sprite 3.00, 4.00, 5.00 \
 bottled water 5.00 \
 """
 
-conversation=[{"role": "system", "content": systemPrompt }]
+# Notice the chat completion can complete both assist and user, so if you do not pad an empty user message,
+# the api will try to complete user as well.
+
+conversation = [
+    {"role": "system", "content": systemPrompt },
+    {"role": "user", "content": "hi"}   # This is important so that completion does not run to stop.
+]
 
 while(True):
-    user_input = input()
-    conversation.append({"role": "user", "content": user_input})
-
     response = openai.ChatCompletion.create(
-        engine="gpt-3.5-turbo", # The deployment name you chose when you deployed the ChatGPT or GPT-4 model.
+        model="gpt-3.5-turbo",
         messages = conversation,
         temperature=0  # Try to as deterministic as possible.
     )
-
-    conversation.append({"role": "assistant", "content": response['choices'][0]['message']['content']})
-    print("\n" + response['choices'][0]['message']['content'] + "\n")
+    reply = response.choices[0].message["content"]
+    print("\nBot:" + reply + "\nUser:")
+    conversation.append({"role": "assistant", "content": reply})
+    user_input = input()
+    conversation.append({"role": "user", "content": user_input})
