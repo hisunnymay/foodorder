@@ -6,20 +6,22 @@ openai.api_key = "sk-"  # your openai api key.
 # type list
 types =  """
 Dish
-- Appetizer
-   - BuffaloStyleChickenEggRolls: Buffalo Style Chicken Egg Rolls 
-   - GrilledShrimp: Grilled Shrimp  
-   - ChickenWings: Chicken Wings
-  
-- Pizza
-  - SmokedChickenPizza: Smoked Chicken Pizza
-  - GreekPizza: Greek Pizza
-  - ItalianPizza: Italian Pizza  
-  
-- Sandwich
-  - FishSandwich: Fish Sandwich
-  - MeatballSandwich: Meatball Sandwich
-  - CheesesteakSandwich: Cheesesteak Sandwich
+- The dishes that this restaurant supplies.
+- Options:
+    - Appetizer: Appetizer
+        - BuffaloStyleChickenEggRolls: Buffalo Style Chicken Egg Rolls 
+        - GrilledShrimp: Grilled Shrimp  
+        - ChickenWings: Chicken Wings
+    
+    - Pizza: Pizza
+        - SmokedChickenPizza: Smoked Chicken Pizza
+        - GreekPizza: Greek Pizza
+        - ItalianPizza: Italian Pizza  
+    
+    - Sandwich: Sandwich
+        - FishSandwich: Fish Sandwich
+        - MeatballSandwich: Meatball Sandwich
+        - CheesesteakSandwich: Cheesesteak Sandwich
   
 DishList
 - Description: the list that stores all the dishes that the user has ordered
@@ -79,67 +81,126 @@ You should respond with: {"skill": ""}
 """
 
 # For getting a slot
-examples_slot = """
-[Context]: "skill = FoodOrdering"
-[Input]: "Chicken Sandwich"
-{
-    "skill": "FoodOrdering", 
-    "dishList" = [
-    {
-        "dish": "Invalid"
-    }]
-}
+# Inputs valid node entity
+example_1 = """
 [context]: "skill = FoodOrdering"
 [input]: "Pizza"
-[Input]: "Italian Pizza"
+[Analysis]: "The user inputs 'Pizza' and it's in the options of 'Dish', so the dish value can be 'Pizza'. Since there are options under 'Pizza', it's not the leaf value and 'leaf' should be false."
 {
     "skill": "FoodOrdering", 
-       "dishList" = [
-    {
-        "dish": "Pizza"
-    }]
-}
-
-[Context]: "skill = FoodOrdering"
-[Input]: "Italian Pizza"
-{
-    "skill": "FoodOrdering", 
-       "dishList" = [
-    {
-        "dish": "ItalianPizza"
-    }]
-}
-
-[Context]: "skill = FoodOrdering"
-[Input]: "Two Italian Pizzas, please"
-{
-    "skill": "FoodOrdering", 
-       "dishList" = [
-    {
-        "dish": "ItalianPizza", 
-        "quantity": "2"
-    }]
-}
-
-[Context]: "skill = FoodOrdering, dishList = [{"dish": "FishSandwich"}]"
-[Input]: "Can I change it to Meatball Sandwich?"
-{
-    "skill": "SlotUpdate", 
-    "originalSlot" = "dish", 
-    "oldValue" = "FishSandwich",
-    "newValue": "MeatballSandwich"
-}
-
-[Context]: "skill = FoodOrdering, dishList = [{"dish": "FishSandwich", "quantity": "2"}]"
-[Input]: "Can I change it to 4?"
-{
-    "skill": "SlotUpdate", 
-    "originalSlot" = "dish", 
-    "oldValue" = "FishSandwich",
-    "newValue": "MeatballSandwich"
+    "dishList": [
+        {
+            "dish": {
+                "value": "Pizza",
+                "leaf": false
+            }
+        }
+    ]
 }
 """
 
+# Inputs invalid leaf entity
+example_2 = """
+[Context]: "skill = FoodOrdering"
+[Input]: "Chicken Sandwich"
+[Analysis]: "The user inputs 'Chicken Sandwich' and it's not in the options of 'Dish', so this value is invalid. Since it's not a valid value, we don't need to add the 'leaf' key."
+{
+    "skill": "FoodOrdering", 
+    "dishList": [
+        {
+            "dish": {
+                "value": "Invalid"
+            }
+        }
+    ]
+}
+"""
+
+# Inputs valid leaf entity
+example_3 = """
+[Context]: "skill = FoodOrdering"
+[Input]: "Italian Pizza"
+[Analysis]: "The user inputs 'Italian Pizza' and it's in the options of 'Dish', so the dish value is 'ItalianPizza'. Since there is no option under 'Italian Pizza, it's the leaf value and 'leaf' should be true."
+{
+    "skill": "FoodOrdering", 
+    "dishList": [
+        {
+            "dish": {
+                "value": "ItalianPizza",
+                "leaf": true
+            }
+        }
+    ]
+}
+"""
+
+# Inputs valid leaf entity with quantity
+example_4 = """
+[Context]: "skill = FoodOrdering"
+[Input]: "Two Italian Pizzas, please"
+[Analysis]: "The user mentions 'Italian Pizza' and it's in the options of 'Dish', so the dish value can be 'ItalianPizza'. The user mentions the quantity of this dish, so its quantity should be 2."
+{
+    "skill": "FoodOrdering", 
+       "dishList": [
+        {
+            "dish":{
+                "value": "ItalianPizza",
+                "leaf": true
+            },
+            "quantity": "2"
+        }
+    ]
+}
+"""
+
+# Inputs the quantity of dish
+example_5 = """
+[Context]: "skill = FoodOrdering, dishList = [{"dish": "FishSandwich"}]"
+[Input]: "I'd like two."
+[Analysis]: "Since the user only mentions a number and 'FishSandwich' lacks a specific quantity, it is assumed that the number refers to the quantity of 'FishSandwich'."
+{
+    "skill": "FoodOrdering", 
+       "dishList": [
+        {
+            "dish": "FishSandwich",
+            "quantity": "2"
+        }
+    ]
+}
+"""
+
+# Slot update: change dish without quantity
+example_6 = """
+[Context]: "skill = FoodOrdering, dishList = [{"dish": "FishSandwich"}]"
+[Input]: "Can I swap my Fish Sandwich for something else, please?
+[Analysis]: "The user asks to update the dish and the new dish is in the options of 'Dish', so the skill should be `SlotUpdate`."
+{
+    "skill": "SlotUpdate", 
+    "originalSlot": "dishList.dish", 
+    "oldValue": {
+        "value": "FishSandwich",
+        "leaf": true
+    }
+}
+"""
+
+# Slot update: change the quantity of dish
+example_7 = """
+[Context]: "skill = FoodOrdering, dishList = [{"dish": "FishSandwich", "quantity": "2"}]"
+[Input]: "Can I change it to 4?"
+[Analysis]: "The user asks to update the quantity of a dish, so the skill should be `SlotUpdate`. Since the quantity is paired with the dish, the 'originalSlot' should be 'dishList'. \
+Since the quantity of the dish is fixed and there are no further options or sub-values for it, we can simply consider it as a 'leaf value' without explicitly adding a 'leaf' key."
+{
+    "skill": "SlotUpdate", 
+    "originalSlot": "dishList", 
+    "oldValue": [{"dish": "FishSandwich", "quantity": "2"}],
+    "newValue": [{"dish": "FishSandwich", "quantity": "4"}]
+}
+"""
+
+examples_slot = example_1 + example_2 + example_3 + example_4 + example_5 + example_6 + example_7
+
+# Call ChatGPT API
 def get_completion(prompt, model="gpt-3.5-turbo"):
     messages = [{"role": "user", "content": prompt}]
     response = openai.ChatCompletion.create(
@@ -149,6 +210,7 @@ def get_completion(prompt, model="gpt-3.5-turbo"):
     )
     return response.choices[0].message["content"]
 
+# Given user input, figure out which skills it implies. 
 class getSkill:
     def __init__(self, skills, examples): 
         self.skills = skills
@@ -166,6 +228,7 @@ class getSkill:
         """
         return get_completion(prompt)
 
+# Given user input and picked skill, including the slots of frame with nested entities, figure out which slot(s) to fill.
 class getSlot:
     def __init__(self, types, skills, examples): 
         self.types = types
@@ -181,7 +244,9 @@ class getSlot:
         whether its type is an entity or a frame. Entities have no slots, while frames do.
         - If it's an entity, check whether the user's input matches \
         the candidate values of that type before filling in the slot. \
-        If there is no match, then set the slot's value to "Invalid".
+          - There are two kinds of entity values: node and leaf. Node values have sub-values or options, while leaf values do not.
+          - If the user-input value is not listed as one of the options for that particular entity, then the slot's value should be set to 'Invalid'.
+
         - If it's a frame, fill its slot with the user-input value. 
     
         Format your response as a JSON object with the skill and \
