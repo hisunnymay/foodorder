@@ -4,7 +4,7 @@ import openai
 openai.api_key = "sk-"  # your openai api key.
 
 # type list
-types =  """
+types = """
 Dish
 - Appetizer
    - BuffaloStyleChickenEggRolls: Buffalo Style Chicken Egg Rolls 
@@ -28,9 +28,9 @@ DishList
   - quantity: the quantity of this dish
 """
 
-# Skill list 
+# Skill list
 # For getting a skill
-skills_skill =  """
+skills_skill = """
 - ShowHours
   - Description: Show business hours
   - User input example: When do you open?
@@ -52,8 +52,50 @@ skills_skill =  """
   - User input example: Hi there, can I order some food?
 """
 
+simple_skills = """
+- ShowHours: Show business hours
+- MakeReservation: Make reservation
+- CancelReservation: Cancel reservation
+- ViewReservation: Show my reservation
+- FoodOrdering: Food ordering
+- SlotUpdate: Change slot value
+"""
+
+simple_skill_examples = """
+input: When do you open?
+skill: ShowHours
+input: I'd like to reserve a table, please.
+skill: MakeReservation 
+
+input: Sorry, but I need to cancel my reservation.
+skill: CancelReservation 
+
+input: Could you show me details of my reservation?
+skill: ViewReservation
+
+input: Hi there, can I order some pizza?
+skill: FoodOrdering 
+
+input: I like to change some thing
+skill: SlotUpdate
+"""
+
+# Examples should be dictionary keyed on skill.
+slots = {
+    "FoodOrdering": """
+    - dishList: the list of dishes
+    """,
+
+    "SlotUpdate": """
+    - originalSlot: original slot
+    - oldValue: old value
+    - index: index
+    - newValue: new value
+    """
+}
+
 # For getting a slot
-skills_slot =  """
+skills_slot = """
 FoodOrdering
 - Description: Food ordering
 - User input example: Hi there, can I order some food?
@@ -114,7 +156,7 @@ examples_slot = """
 [Input]: "Two Italian Pizzas, please"
 {
     "skill": "FoodOrdering", 
-       "dishList" = [
+    "dishList" = [
     {
         "dish": "ItalianPizza", 
         "quantity": "2"
@@ -140,37 +182,41 @@ examples_slot = """
 }
 """
 
+
 def get_completion(prompt, model="gpt-3.5-turbo"):
     messages = [{"role": "user", "content": prompt}]
     response = openai.ChatCompletion.create(
         model=model,
         messages=messages,
-        temperature=0, # this is the degree of randomness of the model's output
+        temperature=0,  # this is the degree of randomness of the model's output
     )
     return response.choices[0].message["content"]
 
+
 class getSkill:
-    def __init__(self, skills, examples): 
+    def __init__(self, skills, examples):
         self.skills = skills
         self.examples = examples
+
     def __call__(self, input):
         prompt = f"""
-        Based on the skills, your task is to determine which of these skills \
-        can appropriately handle the user input. 
+        Given the user input, your task is to determine which of these skills can be implied by it. 
     
         Format your response as a JSON object with "skill" as the key. 
-        Here are ```{examples}``` you can learn from. 
+        Here are ```{self.examples}``` you can learn from. 
 
-        Skills: ```{skills}```
+        Skills: ```{self.skills}```
         User input: ```{input}```
         """
         return get_completion(prompt)
 
+
 class getSlot:
-    def __init__(self, types, skills, examples): 
+    def __init__(self, types, skills, examples):
         self.types = types
         self.skills = skills
         self.examples = examples
+
     def __call__(self, input, context):
         prompt = f"""
         Based on the context, your task is to \
@@ -186,13 +232,13 @@ class getSlot:
     
         Format your response as a JSON object with the skill and \
         the user-mentioned slot as the keys.
-        Here are ```{examples}``` you can learn from. \
+        Here are ```{self.examples}``` you can learn from. \
         Make sure all the value in the JSON object is not null.
         
         Context: ```{context}```
-        Skills: ```{skills}```
-        Types: ```{types}```
+        Skills: ```{self.skills}```
+        Types: ```{self.types}```
         User input: ```{input}```
         """
-    
+
         return get_completion(prompt)
