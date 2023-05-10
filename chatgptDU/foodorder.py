@@ -33,6 +33,10 @@ class getSkill:
         return get_completion(prompt)
 
 
+# There is no reason to include to skill in the response, as each getSlot is called
+# against one of the skill, so we already know that. We just need to get the slot for that
+# skill.
+# what is the context for?
 class getSlot:
     def __init__(self, types, skills, slots, examples):
         self.types = types
