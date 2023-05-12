@@ -15,7 +15,7 @@ def get_completion(prompt, model="gpt-3.5-turbo"):
 
 
 class getSkill:
-    def __init__(self, skills, examples): 
+    def __init__(self, skills, examples):
         self.skills = skills
         self.examples = examples
     def __call__(self, input):
@@ -33,7 +33,7 @@ class getSkill:
     
 
 class getSlot:
-    def __init__(self, types, examples): 
+    def __init__(self, types, examples):
         self.types = types
         self.examples = examples
     def __call__(self, input, targetSkill, targetSlots):
@@ -58,7 +58,7 @@ class getSlot:
 
         
         Types: ```{self.types}```
-        User input: ```{input}``
+        User input: ```{input}```
         """
     
         return get_completion(prompt)
