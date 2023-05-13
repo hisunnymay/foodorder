@@ -20,13 +20,12 @@ class getSkill:
         self.examples = examples
     def __call__(self, input):
         prompt = f"""
-        Based on the skills, your task is to determine which of these skills \
-        can appropriately handle the user input. 
+        Given the user input, your task is to determine which of these skills can be implied by it. 
+        ```{self.skills}```
     
         You only need to respond with the label of the skill.
         Here are ```{self.examples}``` you can learn from. 
 
-        Skills: ```{self.skills}```
         User input: ```{input}```
         """
         return get_completion(prompt)
