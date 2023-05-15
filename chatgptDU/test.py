@@ -109,7 +109,7 @@ Input and output: (The analysis is used for you to understand how to get the out
 # 1. Inputs valid node entity
 example_order_1 = """
 [input]: "Pizza"
-[Analysis]: "'Pizza' is a sub-value of 'DishName', so the 'dishName' is 'Pizza'. Since there are sub-values under 'Pizza', it's not the leaf value and 'leaf' should be false."
+[Analysis]: "'Pizza' is an option of 'DishName' in the 'Dish', so the 'dishName' is 'Pizza'. Since there are sub-values under 'Pizza', it's not the leaf value and 'leaf' should be false."
 {
 	"dishes": [{
 		"dishName": {
@@ -133,7 +133,7 @@ example_order_1 = """
 # 2. Inputs invalid leaf entity
 example_order_2 = """
 [Input]: "Chicken Sandwich"
-[Analysis]: "'Chicken Sandwich' is not a sub-value of 'DishName', so this value is invalid. Since it's an invalid value, we don't need to add the 'leaf' key."
+[Analysis]: "'Chicken Sandwich' is not an option of 'DishName' in the 'Dish', so this value is invalid. Since it's an invalid value, we don't need to add the 'leaf' key."
 {
 	"dishes": [{
 		"dishName": {
@@ -146,7 +146,7 @@ example_order_2 = """
 # 3. Inputs valid leaf entity
 example_order_3 = """
 [Input]: "Italian Pizza"
-[Analysis]: "'Italian Pizza' is a sub-value of 'DishName', so the dish value is 'ItalianPizza'. Since there is no sub-value under 'Italian Pizza, it's the leaf value and 'leaf' should be true."
+[Analysis]: "'Italian Pizza' is an option of 'DishName' in the 'Dish', so the dish value is 'ItalianPizza'. Since there is no sub-value under 'Italian Pizza, it's the leaf value and 'leaf' should be true."
 {
 	"dishes": [{
 		"dishName": {
@@ -160,7 +160,7 @@ example_order_3 = """
 # 4. Inputs valid leaf entity with quantity
 example_order_4 = """
 [Input]: "Two Italian Pizzas, please"
-[Analysis]: "Italian Pizza' is a sub-value of 'DishName', so the dish value is 'ItalianPizza'. The user mentions the quantity of this dish, so its quantity should be 2."
+[Analysis]: "Italian Pizza' is an option of 'DishName' in the 'Dish', so the dish value is 'ItalianPizza'. The user mentions the quantity of this dish, so its quantity should be 2."
 {
 	"dishes": [{
 		"dishName": {
@@ -217,7 +217,7 @@ Input and output: (The analysis is used for you to understand how to get the out
 # 1. Update dish name with old value
 example_update_1 = """
 [Input]: "Can I swap my Fish Sandwich for something else, please?"
-[Analysis]: "'Fish Sandwich' is the name of dish, so the value of 'originalSlot' should be 'dishes.dishName'. 
+[Analysis]: "'Fish Sandwich' is an option of 'DishName' in the 'Dish', so the value of 'originalSlot' should be 'dishes.dishName'. 
 The user asks to change 'Fish Sandwich', so it should be the 'oldValue'. 
 No new value mentioned, so 'newValue' should not be included."
 {
@@ -241,7 +241,7 @@ No new value mentioned, so 'newValue' should not be included."
 # 2. Update dish name with new value
 example_update_2 = """
 [Input]: "Can I change to Cheesesteak Sandwich?"
-[Analysis]: "'Cheesesteak Sandwich' is the name of dish, so the value of 'originalSlot' should be 'dishes.dishName'. 
+[Analysis]: "'Cheesesteak Sandwich' is an option of 'DishName' in the 'Dish', so the value of 'originalSlot' should be 'dishes.dishName'. 
 The user asks to change to 'Cheesesteak Sandwich', so it should be the 'newValue'. 
 No old value mentioned, so 'oldValue' should not be included."
 {
@@ -252,16 +252,7 @@ No old value mentioned, so 'oldValue' should not be included."
     }
 }
 
-[Input]: "Can I get the Smoked Chicken Pizza instead?"
-{
-    "originalSlot": "dishes.dishName",
-    "newValue": {
-        "value": "SmokedChickenPizza",
-        "leaf": true
-    }
-}
-
-[Input]: "Switch it to Fish Sandwich, please?"
+[Input]: "Can I change to Fish Sandwich, please?"
 {
     "originalSlot": "dishes.dishName",
     "newValue": {
@@ -283,7 +274,7 @@ No old value mentioned, so 'oldValue' should not be included."
 # 3. Update quantity with new value (actual number)
 example_update_3 = """
 [Input]: "Can I change to 4?"
-[Analysis]: "'4' is the quantity of dish, so the value of 'originalSlot' should be 'dishes.quantity'.
+[Analysis]: "'4' is the quantity of 'Dish', so the value of 'originalSlot' should be 'dishes.quantity'.
 No old value mentioned, so 'oldValue' should not be included.""
 {
     "originalSlot": "dishes.quantity", 
@@ -306,7 +297,7 @@ No old value mentioned, so 'oldValue' should not be included.""
 # 4. Update quantity with new value (calculation on old value)
 example_update_4 = """
 [Input]: "Three more please"
-[Analysis]: "'3' is the quantity of the dish, so the value of 'originalSlot' should be 'dishes.quantity'. 
+[Analysis]: "'3' is the quantity of 'Dish', so the value of 'originalSlot' should be 'dishes.quantity'. 
 As the user needs three more, we increase the old value by three to arrive at the new value. 
 The format 'slotLabel.plus(n)' is utilized to encode calculations. 
 No old value mentioned, so 'oldValue' should not be included."
@@ -331,7 +322,7 @@ No old value mentioned, so 'oldValue' should not be included."
 # 5. Update dish (name and quantity) with new value and old value
 example_update_5 = """
 [Input]: "Can I actually just get two chicken wings instead? Four might be a bit too much for me."
-[Analysis]: "The user mentions both quantity and name of the dish, so the output should be 'originalSlot': 'dishes'.
+[Analysis]: "The user mentions both quantity and name of the 'Dish', so the output should be 'originalSlot': 'dishes'.
 Since user mentions the both the previous quantity and the new quantity, the 'oldValue' and 'newValue' should be included."
 {
     "originalSlot": "dishes", 
@@ -375,7 +366,7 @@ Since user mentions the both the previous quantity and the new quantity, the 'ol
 # 6. Update dish (name and quantity) with new value
 example_update_6 = """ 
 [Input]: "Can I get another Grilled Shrimp, please?"
-[Analysis]: "The user mentions both quantity and name of the dish, so the output should be 'originalSlot': 'dishes'.
+[Analysis]: "The user mentions both quantity and name of the 'Dish', so the output should be 'originalSlot': 'dishes'.
 No old value mentioned, so 'oldValue' should not be included."
 {
     "originalSlot": "dishes", 
