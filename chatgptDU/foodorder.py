@@ -7,15 +7,14 @@ openai.api_key = "sk-"  # your openai api key.
 def get_completion(prompt, model="gpt-3.5-turbo"):
     messages = [{"role": "user", "content": prompt}]
     response = openai.ChatCompletion.create(
-        model=model,
-        messages=messages,
-        temperature=0,  # this is the degree of randomness of the model's output
+        model = model,
+        messages = messages,
+        temperature = 0, # this is the degree of randomness of the model's output
     )
     return response.choices[0].message["content"]
 
-
 class getSkill:
-    def __init__(self, skills, examples):
+    def __init__(self, skills, examples): 
         self.skills = skills
         self.examples = examples
     def __call__(self, input):
@@ -32,7 +31,7 @@ class getSkill:
     
 
 class getSlot:
-    def __init__(self, types, examples):
+    def __init__(self, types, examples): 
         self.types = types
         self.examples = examples
     def __call__(self, input, targetSkill, targetSlots):
